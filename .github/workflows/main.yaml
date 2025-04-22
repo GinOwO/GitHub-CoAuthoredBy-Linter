@@ -1,0 +1,23 @@
+name: Test Co-author Linter
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+
+jobs:
+  test-linter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        name: Run Co-author Checker
+      
+      - uses: GinOwO/GitHub-CoAuthoredBy-Linter@v1.0.0
+        name: Co-Authored-By Linter
+        with:
+          BASE_REF: ${{ github.base_ref }}
+          STRICT_MODE: 'true'
