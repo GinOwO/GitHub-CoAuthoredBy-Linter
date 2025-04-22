@@ -1,0 +1,10 @@
+.vscode/
+.idea/
+
+dist/
+*.bak
+*.tmp
+
+*.log
+*.swp
+*.tmp
