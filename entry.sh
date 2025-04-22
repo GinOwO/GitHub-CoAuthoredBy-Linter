@@ -20,23 +20,29 @@ set -e
 git config --global --add safe.directory /github/workspace
 git config --global core.pager cat
 
-git fetch origin "$BASE_REF" --quiet
-PREVIOUS_HEAD=$(git rev-parse origin/"$BASE_REF")
-echo -e "$GREEN Previous head of $BASE_REF: $PREVIOUS_HEAD$RESET"
+git fetch --all --quiet
 
-if [ -n "$GITHUB_REF" ]; then
-    git fetch origin "$GITHUB_REF" --quiet
-    CURRENT_HEAD=$(git rev-parse FETCH_HEAD)
-    echo -e "$GREEN Current head (from GITHUB_REF): $CURRENT_HEAD$RESET"
+if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
+    echo -e "$BLUE Pull request detected, using GitHub refs$RESET"
+    BASE_SHA=$(git rev-parse origin/"$GITHUB_BASE_REF")
+    HEAD_SHA=$(git rev-parse origin/"$GITHUB_HEAD_REF")
 else
-    CURRENT_HEAD=$(git rev-parse HEAD)
-    echo -e "$GREEN Current head: $CURRENT_HEAD$RESET"
+    echo -e "$BLUE Regular branch comparison$RESET"
+    BASE_SHA=$(git rev-parse origin/"$BASE_REF")
+    HEAD_SHA=$(git rev-parse HEAD)
 fi
 
-COMMITS=$(git log --pretty=format:"%H" "$PREVIOUS_HEAD".."$CURRENT_HEAD")
+echo -e "$GREEN Base SHA: $BASE_SHA$RESET"
+echo -e "$GREEN Head SHA: $HEAD_SHA$RESET"
+
+echo -e "$BLUE Commit range: $BASE_SHA..$HEAD_SHA$RESET"
+echo -e "$BLUE Commit list:$RESET"
+git log --oneline "$BASE_SHA".."$HEAD_SHA"
+
+COMMITS=$(git log --pretty=format:"%H" "$BASE_SHA".."$HEAD_SHA")
 
 if [ -z "$COMMITS" ]; then
-    echo -e "$RED No commits found between the previous head and the current head.$RESET"
+    echo -e "$RED No commits found between base and head.$RESET"
     exit 0
 fi
 
